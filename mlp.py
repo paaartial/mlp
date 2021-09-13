@@ -16,8 +16,8 @@ mnist_data_train, mnist_target_train, mnist_data_test, mnist_target_test = mnist
 class Net:
     def __init__(self, l, r):
         self.layers=[Layer(li) for li in l]
+        self.input_layer = self.layers[0]
         self.learning_rate=r
-        self.input_layer=self.layers[0]
         self.output_layer=self.layers[len(l)-1]
         for lay in range(1, len(self.layers)):
             for n in self.layers[lay].neurons:
@@ -79,6 +79,7 @@ class Net:
 
     def train(self, data, target, test_indices):
         for index in test_indices:
+            print(index)
             to_feed=data[index].flatten()
             """for row in data[index]:
                 for col in row:
@@ -103,10 +104,18 @@ class Net:
         average_error = average_error / len(test_indices)
         return {"%" : 100 * guess_percentage, "average error": average_error}
 
-test_net=Net([784, 32, 32, 10], 0.05)
+import skimage.measure
 
-train_size=100
-test_size=100
+def conv(input):
+    return skimage.measure.block_reduce(input, (1,3,3), np.max)
+
+mnist_data_train = conv(mnist_data_train)
+mnist_data_test = conv(mnist_data_test)
+print(mnist_data_train.size)
+test_net=Net([mnist_data_train[0].size, 128, 10], 0.05)
+
+train_size=10000
+test_size=1000
 test_indices=[i for i in range(train_size, test_size+train_size)]
 train_indices=[i for i in range(train_size)]
 
