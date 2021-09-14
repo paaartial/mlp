@@ -2,27 +2,31 @@ import random
 import numpy as np
 from numpy.core.fromnumeric import mean
 
+from activation import *
+from cost import *
+
 from layer import Layer
 from neuron import Neuron
 
-from activation import sigmoid, sigmoid_prime
-from cost import mean_squared_error, mse_prime
-
-import tensorflow as tf
-
-mnist = tf.keras.datasets.mnist.load_data()
-mnist_data_train, mnist_target_train, mnist_data_test, mnist_target_test = mnist[0][0], mnist[0][1], mnist[1][0], mnist[1][1]
-
 class Net:
-    def __init__(self, l, r):
+    def __init__(self, n, l, r):
         self.layers=[Layer(li) for li in l]
         self.input_layer = self.layers[0]
         self.learning_rate=r
         self.output_layer=self.layers[len(l)-1]
+        self.name=n
         for lay in range(1, len(self.layers)):
             for n in self.layers[lay].neurons:
                 n.weights=[random.randint(-100, 100)/100 for pn in self.layers[lay-1].neurons]
     
+    def __repr__(self):
+        return self.name
+
+    def set_weights(self, lnw):
+        for l in range(len(self.layers)):
+            for n in range(len(self.layers[l].neurons)):
+                self.layers[l].neurons[n].weights=lnw[l][n]
+
     def feed_forward(self, input, target):
         self.input_layer.set_out_activations(input)
         for current_layer_index in range(1, len(self.layers)):
@@ -38,8 +42,6 @@ class Net:
             if output_activations[a]> output_activations[greatest_activation]:
                 greatest_activation=a
 
-        #print(output_activations)
-        #print(greatest_activation)
         return {"error_prime" : mse_prime(self.output_layer.get_out_activations(), target), "prediction":greatest_activation, "error": mean_squared_error(self.output_layer.get_out_activations(), target)}
 
 
@@ -59,27 +61,19 @@ class Net:
             error_at_layer.append(z * out_in)
         # dout/din *din/dw
 
-        #new_weights=[[[] for n in self.layers[i].neurons] for i in range(1, len(self.layers))]
         for l in range(len(self.layers)-1, 0, -1):
             current_layer=self.layers[l]
             for n in range(len(current_layer.neurons)):
-                for w in range(len(current_layer.neurons[n].weights)):
-                    """       |       use old weights for adjustments of new ones     """
-                    """       V                                                       """
-                                                                                  
+                for w in range(len(current_layer.neurons[n].weights)):                                                                  
                     new_weight = current_layer.neurons[n].weights[w] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n] * self.layers[l-1].get_out_activations()[w]
                     self.layers[l].neurons[n].weights[w]=new_weight
-                    #new_weights[l-1][n].append(new_weight)
-
-        """for l in range(1, len(self.layers)-1):
-            for n in range(len(self.layers[l].neurons)):
-                self.layers[l].set_neuron_weights(new_weights[l-1][n], n)"""
         
                     
 
-    def train(self, data, target, test_indices):
+    def train(self, data, target, test_indices, track_progress=False):
         for index in test_indices:
-            print(index)
+            if track_progress:
+                print(index)
             to_feed=data[index].flatten()
             """for row in data[index]:
                 for col in row:
@@ -103,28 +97,3 @@ class Net:
         guess_percentage = guess_percentage / len(test_indices)
         average_error = average_error / len(test_indices)
         return {"%" : 100 * guess_percentage, "average error": average_error}
-
-import skimage.measure
-
-def conv(input):
-    return skimage.measure.block_reduce(input, (1,3,3), np.max)
-
-mnist_data_train = conv(mnist_data_train)
-mnist_data_test = conv(mnist_data_test)
-print(mnist_data_train.size)
-test_net=Net([mnist_data_train[0].size, 128, 10], 0.05)
-
-train_size=10000
-test_size=1000
-test_indices=[i for i in range(train_size, test_size+train_size)]
-train_indices=[i for i in range(train_size)]
-
-test_1 = test_net.test(mnist_data_train, mnist_target_train, test_indices)
-print(test_1)
-
-test_net.train(mnist_data_train, mnist_target_train, train_indices)
-
-test_2 = test_net.test(mnist_data_train, mnist_target_train, test_indices)
-print(test_2)
-
-test_list=[1, 4, 2, 10, 5]

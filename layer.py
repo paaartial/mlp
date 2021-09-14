@@ -1,4 +1,5 @@
 from neuron import Neuron
+
 class Layer:
     def __init__(self, l, af=None):
         self.length=l
