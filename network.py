@@ -1,9 +1,9 @@
 import random
+import json
 import numpy as np
 from numpy.core.fromnumeric import mean
 
-from activation import *
-from cost import *
+from helper import mse_prime, mean_squared_error, sigmoid, sigmoid_prime
 
 from layer import Layer
 from neuron import Neuron
@@ -17,7 +17,8 @@ class Net:
         self.name=n
         for lay in range(1, len(self.layers)):
             for n in self.layers[lay].neurons:
-                n.weights=[random.randint(-100, 100)/100 for pn in self.layers[lay-1].neurons]
+                n.weights = [random.randint(-100, 100)/100 for pn in self.layers[lay-1].neurons]
+                n.bias = random.randint(-100, 100)/100
     
     def __repr__(self):
         return self.name
@@ -27,8 +28,9 @@ class Net:
             for n in range(len(self.layers[l].neurons)):
                 self.layers[l].neurons[n].weights=lnw[l][n]
 
-    def feed_forward(self, input, target):
-        self.input_layer.set_out_activations(input)
+    def feed_forward(self, pair):
+        self.input_layer.set_out_activations(pair[0].flatten())
+        target = pair[1]
         for current_layer_index in range(1, len(self.layers)):
             wm=self.layers[current_layer_index].get_weight_matrix()
             a=self.layers[current_layer_index-1].get_out_activations()
@@ -43,8 +45,6 @@ class Net:
                 greatest_activation=a
 
         return {"error_prime" : mse_prime(self.output_layer.get_out_activations(), target), "prediction":greatest_activation, "error": mean_squared_error(self.output_layer.get_out_activations(), target)}
-
-
 
     def backpropogate(self, cost):
         # dC/dout * dout/din
@@ -68,32 +68,34 @@ class Net:
                     new_weight = current_layer.neurons[n].weights[w] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n] * self.layers[l-1].get_out_activations()[w]
                     self.layers[l].neurons[n].weights[w]=new_weight
         
-                    
-
-    def train(self, data, target, test_indices, track_progress=False):
-        for index in test_indices:
+    def train(self, train_pairs, track_progress=True):
+        for train_index in range(len(train_pairs)):
             if track_progress:
-                print(index)
-            to_feed=data[index].flatten()
-            """for row in data[index]:
-                for col in row:
-                    to_feed.append(col/255)"""
-            iteration = self.feed_forward(to_feed, target[index])
+                print("training: " + str(train_index) + "/" + str(len(train_pairs)))
+            iteration = self.feed_forward(train_pairs[train_index])
             self.backpropogate(iteration["error_prime"])
         return iteration
     
-    def test(self, data, target, test_indices):
+
+    def test(self, test_pairs, track_progress=False):
         average_error=0
         guess_percentage=0
-        for index in test_indices:
-            to_feed = data[index].flatten()
-            """for row in data[index]:
-                for col in row:
-                    to_feed.append(col/255)"""
-            iteration = self.feed_forward(to_feed, target[index])
+        for test_index in range(len(test_pairs)):
+            if track_progress:
+                print("testing: " + str(test_index) + "/" + str(len(test_index)))
+            iteration = self.feed_forward(test_pairs[test_index])
             average_error+=sum(iteration["error"])
-            if iteration["prediction"] == target[index]:
+            if iteration["prediction"] == test_pairs[test_index][1]:
                 guess_percentage +=1
-        guess_percentage = guess_percentage / len(test_indices)
-        average_error = average_error / len(test_indices)
+        guess_percentage = guess_percentage / len(test_pairs)
+        average_error = average_error / len(test_pairs)
         return {"%" : 100 * guess_percentage, "average error": average_error}
+
+
+    def save_network(self):
+        with open(self.name +".json", "w") as outfile:
+            to_save={}
+            to_save["weights"]=[[n.weights for n in l.neurons] for l in self.layers]
+            to_save["layers"]=[len(l.neurons) for l in self.layers]
+            to_save["lr"] = self.learning_rate
+            json.dump(to_save, outfile)

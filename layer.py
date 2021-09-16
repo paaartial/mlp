@@ -6,6 +6,9 @@ class Layer:
         self.activation_function=af
         self.neurons=[Neuron() for n in range(l)]
 
+    def get_biases(self):
+        return [n.bias for n in self.neurons]
+
     def get_weight_matrix(self):
         return [n.weights for n in self.neurons]
     
