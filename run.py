@@ -4,7 +4,7 @@ from neuron import Neuron
 from network import Net
 from helper import *
 
-import tensorflow as tf
+from tensorflow.keras.datasets.mnist import load_data
 import skimage.measure
 
 import numpy as np
@@ -24,7 +24,7 @@ def load_network(network_name, new_name=""):
         network_to_load.set_weights(network_data["weights"]) 
     return network_to_load
 
-mnist = tf.keras.datasets.mnist.load_data()
+mnist = load_data()
 mnist_train, mnist_test = (conv(mnist[0][0]), mnist[0][1]), (conv(mnist[1][0]), mnist[1][1])
 
 train_size = 100
