@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy.core.fromnumeric import mean
 
-from helper import mse_prime, mean_squared_error, sigmoid, sigmoid_prime
+from helper import mse_prime, mean_squared_error, sigmoid, sigmoid_prime, element_wise_mult
 
 from layer import Layer
 from neuron import Neuron
@@ -28,12 +28,19 @@ class Net:
             for n in range(len(self.layers[l].neurons)):
                 self.layers[l].neurons[n].weights=lnw[l][n]
 
+    def total_avg_error(self, pairs):
+        err=[0 for i in range(10)]
+        for pair in pairs:
+            err = np.add(err, self.feed_forward(pair)["error_prime"])
+        return [e/len(pairs) for e in err]
+
     def feed_forward(self, pair):
         self.input_layer.set_out_activations(pair[0].flatten())
         target = pair[1]
         for current_layer_index in range(1, len(self.layers)):
             wm=self.layers[current_layer_index].get_weight_matrix()
             a=self.layers[current_layer_index-1].get_out_activations()
+            b=self.layers[current_layer_index].get_biases()
             z=np.dot(wm, a)
             self.layers[current_layer_index].set_in_activations(z)
             self.layers[current_layer_index].set_out_activations(sigmoid(z))
@@ -64,9 +71,11 @@ class Net:
         for l in range(len(self.layers)-1, 0, -1):
             current_layer=self.layers[l]
             for n in range(len(current_layer.neurons)):
+                new_bias = current_layer.neurons[n].bias - self.learning_rate *error_at_layer[len(self.layers)-l-1][n]
+                self.layers[l].neurons[n].bias = new_bias
                 for w in range(len(current_layer.neurons[n].weights)):                                                                  
                     new_weight = current_layer.neurons[n].weights[w] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n] * self.layers[l-1].get_out_activations()[w]
-                    self.layers[l].neurons[n].weights[w]=new_weight
+                    self.layers[l].neurons[n].weights[w] = new_weight
         
     def train(self, train_pairs, track_progress=True):
         for train_index in range(len(train_pairs)):
@@ -76,7 +85,14 @@ class Net:
             self.backpropogate(iteration["error_prime"])
         return iteration
     
-
+    def batch_gradient_descent(self, train_pairs):
+        progress=1
+        for pair in train_pairs:
+            print(str(progress) + "/" + str(len(train_pairs)))
+            total_error = self.total_avg_error(train_pairs)
+            self.backpropogate(total_error)
+            progress+=1
+            
     def test(self, test_pairs, track_progress=False):
         average_error=0
         guess_percentage=0
