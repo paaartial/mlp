@@ -1,7 +1,9 @@
 from neuron import Neuron
 
+from helper import sigmoid, ReLu
+
 class Layer:
-    def __init__(self, l, af=None):
+    def __init__(self, l, af=sigmoid):
         self.length=l
         self.activation_function=af
         self.neurons=[Neuron() for n in range(l)]

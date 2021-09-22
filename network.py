@@ -1,9 +1,11 @@
 import random
 import json
+import time
+
 import numpy as np
 from numpy.core.fromnumeric import mean
 
-from helper import mse_prime, mean_squared_error, sigmoid, sigmoid_prime, element_wise_mult
+from helper import ReLu, mse_prime, mean_squared_error, sigmoid, sigmoid_prime, element_wise_mult
 
 from layer import Layer
 from neuron import Neuron
@@ -38,12 +40,11 @@ class Net:
         self.input_layer.set_out_activations(pair[0].flatten())
         target = pair[1]
         for current_layer_index in range(1, len(self.layers)):
-            wm=self.layers[current_layer_index].get_weight_matrix()
-            a=self.layers[current_layer_index-1].get_out_activations()
-            b=self.layers[current_layer_index].get_biases()
-            z=np.dot(wm, a)
+            cl = self.layers[current_layer_index]
+            wm, a, b = cl.get_weight_matrix(), self.layers[current_layer_index-1].get_out_activations(), cl.get_biases()
+            z=np.add(np.dot(wm, a), b)
             self.layers[current_layer_index].set_in_activations(z)
-            self.layers[current_layer_index].set_out_activations(sigmoid(z))
+            self.layers[current_layer_index].set_out_activations(cl.activation_function(z))
 
         greatest_activation=0
         output_activations = self.output_layer.get_out_activations()
@@ -56,14 +57,14 @@ class Net:
     def backpropogate(self, cost):
         # dC/dout * dout/din
         error_at_layer=[]
-        sigmoid_prime_list = sigmoid_prime(self.output_layer.get_in_activations())
+        sigmoid_prime_list = self.output_layer.activation_function(self.output_layer.get_in_activations(), deriv=True)
         error_at_layer.append([cost[n] * sigmoid_prime_list[n] for n in range(len(self.output_layer.neurons))])
 
         for l in range(len(self.layers)-2, 0, -1):
             #in     hidden1 hidden2     out
             weights_transpose = np.transpose(self.layers[l+1].get_weight_matrix())
             error_at_next_layer=error_at_layer[len(self.layers)-2-l]
-            out_in=sigmoid_prime(self.layers[l].get_in_activations())
+            out_in=self.layers[l].activation_function(self.layers[l].get_in_activations(), deriv=True)
             z = np.dot(weights_transpose, error_at_next_layer)
             error_at_layer.append(z * out_in)
         # dout/din *din/dw
@@ -78,12 +79,15 @@ class Net:
                     self.layers[l].neurons[n].weights[w] = new_weight
         
     def train(self, train_pairs, track_progress=True):
+        start_time = time.time()
         for train_index in range(len(train_pairs)):
             if track_progress:
                 print("training: " + str(train_index) + "/" + str(len(train_pairs)))
             iteration = self.feed_forward(train_pairs[train_index])
             self.backpropogate(iteration["error_prime"])
-        return iteration
+        end_time = time.time()
+        time_elapsed = end_time-start_time
+        print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
     
     def batch_gradient_descent(self, train_pairs):
         progress=1

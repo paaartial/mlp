@@ -22,11 +22,18 @@ def mse_prime(predict, target):
         return [a-t for (a, t) in zip(predict, target_list)]
 
 #ACTIVATION
-def sigmoid(xl):
-    return [1/(1 + math.e**-x) for x in xl]
+def sigmoid(xl, deriv=False):
+    if not deriv:
+        return [1/(1 + math.e**-x) for x in xl]
+    return [sx * (1-sx) for sx in sigmoid(xl)]
 
 def sigmoid_prime(xl):
     return [sx * (1-sx) for sx in sigmoid(xl)]
+
+def ReLu(xl, deriv=False):
+    if not deriv:
+        return [max(x, 0) for x in xl]
+    return [max(x, 0)/x for x in xl]
     
 #DATASET MANIPULATIOM
 def split_train_test(train, test, train_size, test_size):

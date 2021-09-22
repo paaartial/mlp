@@ -27,14 +27,18 @@ def load_network(network_name, new_name=""):
 mnist = load_data()
 mnist_train, mnist_test = (conv(mnist[0][0]), mnist[0][1]), (conv(mnist[1][0]), mnist[1][1])
 
-train_size = 100
-test_size = 1
+train_size = 10000
+test_size = 1000
 
 #print(fashion_mnist_train_data[0])
 to_train, to_test = split_train_test(mnist_train, mnist_test, train_size, test_size)
-test_net=Net("test_net", [mnist_train[0][0].size, 128, 10], 0.05)
-test_net.train(to_train)
+print(mnist_train[0][0].size)
+test_net=Net("test_net", [mnist_train[0][0].size, 76, 76, 10], 0.05)
+
 test1=test_net.test(to_test)
-print(test1)
+
+test_net.train(to_train)
+test2=test_net.test(to_test)
+print(test1, test2)
 
 test_list=[1, 4, 2, 10, 5]
