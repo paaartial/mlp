@@ -18,9 +18,8 @@ class Net:
         self.output_layer=self.layers[len(l)-1]
         self.name=n
         for lay in range(1, len(self.layers)):
-            for n in self.layers[lay].neurons:
-                n.weights = [random.randint(-30, 30)/100 for pn in self.layers[lay-1].neurons]
-                n.bias = random.randint(-50, 50)/100
+            self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for pn in range(self.layers[lay-1].length)] for n in range(self.layers[lay].length)]
+            self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
     
     def __repr__(self):
         return self.name
@@ -37,46 +36,46 @@ class Net:
         return [e/len(pairs) for e in err]
 
     def feed_forward(self, pair):
-        self.input_layer.set_out_activations(pair[0].flatten())
+        self.input_layer.out_activations = pair[0].flatten()
         target = pair[1]
         for current_layer_index in range(1, len(self.layers)):
             cl = self.layers[current_layer_index]
-            wm, a, b = cl.get_weight_matrix(), self.layers[current_layer_index-1].get_out_activations(), cl.get_biases()
+            wm, a, b = cl.weight_matrix, self.layers[current_layer_index-1].out_activations, cl.biases
             z=np.add(np.dot(wm, a), b)
-            self.layers[current_layer_index].set_in_activations(z)
-            self.layers[current_layer_index].set_out_activations(cl.activation_function(z))
+            self.layers[current_layer_index].in_activations = z
+            self.layers[current_layer_index].out_activations = cl.activation_function(z)
 
         greatest_activation=0
-        output_activations = self.output_layer.get_out_activations()
+        output_activations = self.output_layer.out_activations
         for a in range(len(output_activations)):
             if output_activations[a]> output_activations[greatest_activation]:
                 greatest_activation=a
 
-        return {"error_prime" : mse_prime(self.output_layer.get_out_activations(), target), "prediction":greatest_activation, "error": mean_squared_error(self.output_layer.get_out_activations(), target)}
+        return {"error_prime" : mse_prime(output_activations, target), "prediction" : greatest_activation, "error" : mean_squared_error(output_activations, target)}
 
     def backpropogate(self, cost):
         # dC/dout * dout/din
         error_at_layer=[]
-        sigmoid_prime_list = self.output_layer.activation_function(self.output_layer.get_in_activations(), deriv=True)
-        error_at_layer.append([cost[n] * sigmoid_prime_list[n] for n in range(len(self.output_layer.neurons))])
+        sigmoid_prime_list = self.output_layer.activation_function(self.output_layer.in_activations, deriv=True)
+        error_at_layer.append([cost[n] * sigmoid_prime_list[n] for n in range(self.output_layer.length)])
 
         for l in range(len(self.layers)-2, 0, -1):
             #in     hidden1 hidden2     out
-            weights_transpose = np.transpose(self.layers[l+1].get_weight_matrix())
+            weights_transpose = np.transpose(self.layers[l+1].weight_matrix)
             error_at_next_layer=error_at_layer[len(self.layers)-2-l]
-            out_in=self.layers[l].activation_function(self.layers[l].get_in_activations(), deriv=True)
+            out_in=self.layers[l].activation_function(self.layers[l].in_activations, deriv=True)
             z = np.dot(weights_transpose, error_at_next_layer)
             error_at_layer.append(z * out_in)
         # dout/din *din/dw
 
         for l in range(len(self.layers)-1, 0, -1):
             current_layer=self.layers[l]
-            for n in range(len(current_layer.neurons)):
-                new_bias = current_layer.neurons[n].bias - self.learning_rate *error_at_layer[len(self.layers)-l-1][n]
-                self.layers[l].neurons[n].bias = new_bias
-                for w in range(len(current_layer.neurons[n].weights)):                                                                  
-                    new_weight = current_layer.neurons[n].weights[w] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n] * self.layers[l-1].get_out_activations()[w]
-                    self.layers[l].neurons[n].weights[w] = new_weight
+            for n_index in range(current_layer.length):
+                new_bias = current_layer.biases[n_index] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index]
+                self.layers[l].biases[n_index] = new_bias
+                for n_index_prev in range(self.layers[l-1].length):                                                                  
+                    new_weight = current_layer.weight_matrix[n_index][n_index_prev] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index] * self.layers[l-1].out_activations[n_index_prev]
+                    self.layers[l].weight_matrix[n_index][n_index_prev] = new_weight
         
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
