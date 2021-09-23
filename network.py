@@ -19,8 +19,8 @@ class Net:
         self.name=n
         for lay in range(1, len(self.layers)):
             for n in self.layers[lay].neurons:
-                n.weights = [random.randint(-100, 100)/100 for pn in self.layers[lay-1].neurons]
-                n.bias = random.randint(-100, 100)/100
+                n.weights = [random.randint(-30, 30)/100 for pn in self.layers[lay-1].neurons]
+                n.bias = random.randint(-50, 50)/100
     
     def __repr__(self):
         return self.name
@@ -112,7 +112,7 @@ class Net:
         return {"%" : 100 * guess_percentage, "average error": average_error}
 
 
-    def save_network(self):
+    def save(self):
         with open(self.name +".json", "w") as outfile:
             to_save={}
             to_save["weights"]=[[n.weights for n in l.neurons] for l in self.layers]
