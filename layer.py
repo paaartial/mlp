@@ -1,5 +1,3 @@
-from neuron import Neuron
-
 from helper import sigmoid, ReLu
 
 class Layer:

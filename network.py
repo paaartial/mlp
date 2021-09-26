@@ -5,10 +5,9 @@ import time
 import numpy as np
 from numpy.core.fromnumeric import mean
 
-from helper import ReLu, mse_prime, mean_squared_error, sigmoid, sigmoid_prime, element_wise_mult
+from helper import ReLu, mse_prime, mean_squared_error, sigmoid, element_wise_mult
 
 from layer import Layer
-from neuron import Neuron
 
 class Net:
     def __init__(self, n, l, r):
@@ -26,8 +25,7 @@ class Net:
 
     def set_weights(self, lnw):
         for l in range(len(self.layers)):
-            for n in range(len(self.layers[l].neurons)):
-                self.layers[l].neurons[n].weights=lnw[l][n]
+            self.layers[l].weight_matrix=lnw[l]
 
     def total_avg_error(self, pairs):
         err=[0 for i in range(10)]
@@ -114,7 +112,7 @@ class Net:
     def save(self):
         with open(self.name +".json", "w") as outfile:
             to_save={}
-            to_save["weights"]=[[n.weights for n in l.neurons] for l in self.layers]
-            to_save["layers"]=[len(l.neurons) for l in self.layers]
+            to_save["weights"]=[l.weight_matrix for l in self.layers]
+            to_save["layers"]=[l.length for l in self.layers]
             to_save["lr"] = self.learning_rate
             json.dump(to_save, outfile)

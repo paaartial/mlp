@@ -1,7 +1,6 @@
 from layer import Layer
-from neuron import Neuron
-
 from network import Net
+
 from helper import *
 
 from tensorflow.keras.datasets.mnist import load_data
@@ -28,16 +27,19 @@ mnist = load_data()
 mnist_train, mnist_test = (conv(mnist[0][0]), mnist[0][1]), (conv(mnist[1][0]), mnist[1][1])
 
 train_size = 10000
-test_size = 10000
+test_size = 1000
 
 to_train, to_test = split_train_test(mnist_train, mnist_test, train_size, test_size)
 test_net=Net("test_net", [mnist_train[0][0].size, 76, 10], 0.05)
 
-#print([test_net.feed_forward(to_train[i])["prediction"] for i in range(50)])
 test1=test_net.test(to_test)
 
 test_net.train(to_train)
 test2=test_net.test(to_test)
 print(test1, test2)
+
+
+#test_err = test_net.feed_forward(to_train[0])
+#test_net.backpropogate(test_err)
 
 test_list=[1, 4, 2, 10, 5]
