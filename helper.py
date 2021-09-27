@@ -50,6 +50,13 @@ def draw_image(img_to_draw):
     plt.axis("off")
     plt.show()
 
+def dot_1d_transpose(l1, l2):
+    rows=[]
+    for r in range(len(l1)):
+        rows.append([l1[r]*i for i in l2])
+    return np.array(rows)
+
+
 def element_wise_mult(l1, l2):
     try:
         assert len(l1) == len(l2)
