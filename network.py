@@ -5,7 +5,7 @@ import time
 import numpy as np
 from numpy.core.fromnumeric import mean
 
-from helper import ReLu, mse_prime, mean_squared_error, sigmoid, element_wise_mult
+from helper import ReLu, mse_prime, mean_squared_error, sigmoid, element_wise_mult, dot_1d_transpose
 
 from layer import Layer
 
@@ -65,15 +65,23 @@ class Net:
             z = np.dot(weights_transpose, error_at_next_layer)
             error_at_layer.append(z * out_in)
         # dout/din *din/dw
-
+        #print([len(error_at_layer[i]) for i in range(len(error_at_layer))])
         for l in range(len(self.layers)-1, 0, -1):
+            #print(l)
             current_layer=self.layers[l]
-            for n_index in range(current_layer.length):
+            #print("current layer: " + str(l))
+            #print(len(error_at_layer[len(self.layers)-l-1]))
+            delta_w = dot_1d_transpose(error_at_layer[len(self.layers)-l-1], (self.layers[l-1].out_activations))
+            self.layers[l].weight_matrix = np.subtract(self.layers[l].weight_matrix, self.learning_rate*delta_w)
+
+            delta_b = np.array(error_at_layer[len(self.layers)-l-1])
+            self.layers[l].biases = np.subtract(self.layers[l].biases, self.learning_rate * delta_b)
+            """for n_index in range(current_layer.length):
                 new_bias = current_layer.biases[n_index] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index]
                 self.layers[l].biases[n_index] = new_bias
                 for n_index_prev in range(self.layers[l-1].length):                                                                  
                     new_weight = current_layer.weight_matrix[n_index][n_index_prev] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index] * self.layers[l-1].out_activations[n_index_prev]
-                    self.layers[l].weight_matrix[n_index][n_index_prev] = new_weight
+                    self.layers[l].weight_matrix[n_index][n_index_prev] = new_weight"""
         
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
