@@ -30,16 +30,21 @@ train_size = 10000
 test_size = 1000
 
 to_train, to_test = split_train_test(mnist_train, mnist_test, train_size, test_size)
-test_net=Net("test_net", [mnist_train[0][0].size, 76, 10], 0.05)
 
-test1=test_net.test(to_test)
+def find_optimal_learning_rate(start, delta, num_tests):
+    performance_by_lr = {}
+    for iteration in range(1, num_tests+1):
+        lr=start+delta*iteration
+        temp_net=Net("temp_net", [mnist_train[0][0].size, 76, 10], lr)
+        temp_net.train(to_train, track_progress=False)
+        test=temp_net.test(to_test)
+        print("test " + str(iteration) + " done")
+        performance_by_lr[lr] = test
+    return performance_by_lr
 
+test_net = Net("test_net", [mnist_train[0][0].size, 76, 10], 0.01)
 test_net.train(to_train)
-test2=test_net.test(to_test)
-print(test1, test2)
-
-
-#test_err = test_net.feed_forward(to_train[0])
-#test_net.backpropogate(test_err)
-
-test_list=[1, 4, 2, 10, 5]
+test1=test_net.test(to_test)
+print(test1)
+#tests=find_optimal_learning_rate(0.009, 0.001, 10)
+#print(tests)
