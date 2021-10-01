@@ -1,4 +1,4 @@
-from helper import sigmoid, ReLu
+from helper import sigmoid, ReLu, tanh
 
 class Layer:
     def __init__(self, l, af=sigmoid):
