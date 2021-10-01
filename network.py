@@ -1,28 +1,42 @@
 import random
+import math
+
 import json
 import time
 
 import numpy as np
-from numpy.core.fromnumeric import mean
 
-from helper import ReLu, mse_prime, mean_squared_error, sigmoid, element_wise_mult, dot_1d_transpose
+from helper import ReLu, mse_prime, mean_squared_error, sigmoid, tanh, dot_1d_transpose
 
 from layer import Layer
 
-class Net:
+random.seed(42)
+
+class Network:
     def __init__(self, n, l, r):
         self.layers=[Layer(li) for li in l]
         self.input_layer = self.layers[0]
         self.learning_rate=r
         self.output_layer=self.layers[len(l)-1]
+        self.output_layer.activation_function=sigmoid
         self.name=n
         for lay in range(1, len(self.layers)):
-            self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for pn in range(self.layers[lay-1].length)] for n in range(self.layers[lay].length)]
+            self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for n in range(self.layers[lay-1].length)] for n2 in range(self.layers[lay].length)]
             self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
+
+            #self.layers[lay].weight_matrix = np.random.rand(self.layers[lay].length, self.layers[lay-1].length)
+            #self.layers[lay].biases = np.random.rand(self.layers[lay].length) 
+
+            #limit = np.sqrt(6 / float(self.layers[lay-1].length + self.layers[lay].length))
+            # scale = 1/max(1., (self.layers[lay].length+self.layers[lay].length)/2.)
+            # limit = math.sqrt(3.0 * scale)
+            # self.layers[lay].weight_matrix = np.random.uniform(low=-limit, high=limit, size=(self.layers[lay].length, self.layers[lay-1].length))
+            # self.layers[lay].biases = np.zeros(self.layers[lay].length)
     
     def __repr__(self):
         return self.name
 
+    #used for loading network. basically a better initialization method
     def set_weights(self, lnw):
         for l in range(len(self.layers)):
             self.layers[l].weight_matrix=lnw[l]
@@ -57,6 +71,7 @@ class Net:
         sigmoid_prime_list = self.output_layer.activation_function(self.output_layer.in_activations, deriv=True)
         error_at_layer.append([cost[n] * sigmoid_prime_list[n] for n in range(self.output_layer.length)])
 
+        #loops over layers and calculates error
         for l in range(len(self.layers)-2, 0, -1):
             #in     hidden1 hidden2     out
             weights_transpose = np.transpose(self.layers[l+1].weight_matrix)
@@ -65,23 +80,15 @@ class Net:
             z = np.dot(weights_transpose, error_at_next_layer)
             error_at_layer.append(z * out_in)
         # dout/din *din/dw
-        #print([len(error_at_layer[i]) for i in range(len(error_at_layer))])
+
+        #calculates weight, bias deltas from error
         for l in range(len(self.layers)-1, 0, -1):
-            #print(l)
-            current_layer=self.layers[l]
-            #print("current layer: " + str(l))
-            #print(len(error_at_layer[len(self.layers)-l-1]))
+
             delta_w = dot_1d_transpose(error_at_layer[len(self.layers)-l-1], (self.layers[l-1].out_activations))
             self.layers[l].weight_matrix = np.subtract(self.layers[l].weight_matrix, self.learning_rate*delta_w)
 
             delta_b = np.array(error_at_layer[len(self.layers)-l-1])
             self.layers[l].biases = np.subtract(self.layers[l].biases, self.learning_rate * delta_b)
-            """for n_index in range(current_layer.length):
-                new_bias = current_layer.biases[n_index] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index]
-                self.layers[l].biases[n_index] = new_bias
-                for n_index_prev in range(self.layers[l-1].length):                                                                  
-                    new_weight = current_layer.weight_matrix[n_index][n_index_prev] - self.learning_rate *error_at_layer[len(self.layers)-l-1][n_index] * self.layers[l-1].out_activations[n_index_prev]
-                    self.layers[l].weight_matrix[n_index][n_index_prev] = new_weight"""
         
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
@@ -115,7 +122,6 @@ class Net:
         guess_percentage = guess_percentage / len(test_pairs)
         average_error = average_error / len(test_pairs)
         return {"%" : 100 * guess_percentage, "average error": average_error}
-
 
     def save(self):
         with open(self.name +".json", "w") as outfile:
