@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 
-from helper import ReLu, mse_prime, mean_squared_error, sigmoid, tanh, dot_1d_transpose
+from helper import *
 
 from layer import Layer
 
@@ -40,6 +40,12 @@ class Network:
     def set_weights(self, lnw):
         for l in range(len(self.layers)):
             self.layers[l].weight_matrix=lnw[l]
+
+    #random is seeded, so this method just resets a neural network
+    def clear_weights(self):
+        for lay in range(1, len(self.layers)):
+            self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for n in range(self.layers[lay-1].length)] for n2 in range(self.layers[lay].length)]
+            self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
 
     def total_avg_error(self, pairs):
         err=[0 for i in range(10)]
@@ -94,12 +100,12 @@ class Network:
         start_time = time.time()
         for train_index in range(len(train_pairs)):
             if track_progress:
-                print("training: " + str(train_index) + "/" + str(len(train_pairs)))
+                display_progress(train_index, len(train_pairs))
             iteration = self.feed_forward(train_pairs[train_index])
             self.backpropogate(iteration["error_prime"])
         end_time = time.time()
         time_elapsed = end_time-start_time
-        print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
+        #print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
     
     def batch_gradient_descent(self, train_pairs):
         progress=1
@@ -114,19 +120,39 @@ class Network:
         guess_percentage=0
         for test_index in range(len(test_pairs)):
             if track_progress:
-                print("testing: " + str(test_index) + "/" + str(len(test_index)))
+                print("why?")
             iteration = self.feed_forward(test_pairs[test_index])
             average_error+=sum(iteration["error"])
             if iteration["prediction"] == test_pairs[test_index][1]:
                 guess_percentage +=1
         guess_percentage = guess_percentage / len(test_pairs)
         average_error = average_error / len(test_pairs)
+        print("\n" + "stats: " + str({"%" : 100 * guess_percentage, "average error": average_error}))
         return {"%" : 100 * guess_percentage, "average error": average_error}
 
+    def find_optimal_learning_rate(self, start, delta, num_tests, train_pairs, test_pairs):
+        performance_by_lr = {}
+        total_train_pairs = num_tests * len(train_pairs)
+        for lr_test_index in range(1, num_tests+1):
+            self.learning_rate=start+delta*lr_test_index
+            for train_index in range(len(train_pairs)):
+                #display_progress(train_index + (lr_test_index-1) * len(train_pairs), total_train_pairs)
+                print("test: " + str(lr_test_index) +"/" + str(num_tests) + " train progress: " + str(train_index) + "/" + str(len(train_pairs)))
+                iteration = self.feed_forward(train_pairs[train_index])
+                self.backpropogate(iteration["error_prime"])
+            test=self.test(test_pairs)
+            #print("test " + str(iteration) + " done")
+            performance_by_lr[self.learning_rate] = test
+            self.clear_weights()
+        lr_best = performance_by_lr[sort_things(performance_by_lr)[0]]["%"]
+        self.learning_rate = lr_best
+        self.train(train_pairs)
+        return performance_by_lr
+        
     def save(self):
         with open(self.name +".json", "w") as outfile:
             to_save={}
-            to_save["weights"]=[l.weight_matrix for l in self.layers]
+            to_save["weights"]=[[list(n) for n in l.weight_matrix] for l in self.layers]
             to_save["layers"]=[l.length for l in self.layers]
             to_save["lr"] = self.learning_rate
             json.dump(to_save, outfile)
