@@ -1,3 +1,4 @@
+from json import load
 from layer import Layer
 from network import Network
 
@@ -26,29 +27,34 @@ def load_network(network_name, new_name=""):
 mnist = load_data()
 mnist_train, mnist_test = (conv(mnist[0][0]), mnist[0][1]), (conv(mnist[1][0]), mnist[1][1])
 
-train_size = 10000
-test_size = 1000
+train_size = 20000
+test_size = 10000
 
 to_train, to_test = split_train_test(mnist_train, mnist_test, train_size, test_size)
 
-def find_optimal_learning_rate(start, delta, num_tests):
-    performance_by_lr = {}
-    for iteration in range(1, num_tests+1):
-        lr=start+delta*iteration
-        temp_net=Network("temp_net", [mnist_train[0][0].size, 76, 10], lr)
-        temp_net.train(to_train, track_progress=False)
-        test=temp_net.test(to_test)
-        print("test " + str(iteration) + " done")
-        performance_by_lr[lr] = test
-    return performance_by_lr
+#net = Network("train_complete", [mnist_train[0][0].size, 76, 10], 0.012)
 
-#tests = find_optimal_learning_rate(0.005, 0.001, 50)
-#print(sort_things(tests))
+#first test:
+#start = 0.005, delta = 0.001, iterations = 50
+#train, test size = 10000
 
-#0.055
-"""num_epochs=5
-test_net = Network("test_net", [mnist_train[0][0].size, 76, 10], 0.015)
+net = load_network("train_complete")
+#net.train(to_train)
+net.test(to_test)
+#net.save()
+
+
+
+"""
+lrs = net.find_optimal_learning_rate(0.005, 0.001, 50, to_train, to_test)
+lrs_sorted = sort_things(lrs)
+print(lrs)
+print(lrs[lrs_sorted[0]]["%"])
+"""
+
+"""
+num_epochs=3
 for epoch in range(num_epochs):
-    test_net.train(to_train)
-test1=test_net.test(to_test)
-print(test1)"""
+    net.train(to_train)
+net.test(to_test)
+"""
