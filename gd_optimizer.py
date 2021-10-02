@@ -18,7 +18,7 @@ class Momentum(gradient_descent_optimizer):
         # M = Bmt-1+ (1-B)dL/dw
         return self.beta1*m_prev + (1-self.beta1)*cur_grad
 
-class Adadelta(gradient_descent_optimizer):
+class Adadelta(gradient_descent_optimizer): 
     pass
 
 class Adam(gradient_descent_optimizer):
