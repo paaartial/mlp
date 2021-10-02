@@ -69,7 +69,7 @@ def element_wise_mult(l1, l2):
 def sort_dictionary(d):
     return sorted(d.items())[::-1]
 
-def sort_things(d, transform = True):
+def sort_things(d, transform = True, ascending=False):
     copy=d
     sortedd=[]
     if transform: 
@@ -81,10 +81,22 @@ def sort_things(d, transform = True):
     for it in range(len(copy)):
         greatest=0
         for index in range(len(copy)):
+            #print(copy[[list(copy[greatest].keys())][0]]["%"])
             if copy[index][list(copy[index].keys())[0]]["%"]>copy[greatest][list(copy[greatest].keys())[0]]["%"]:
                 greatest=index
-        print(copy[greatest][list(copy[greatest].keys())[0]]["%"])
-        sortedd.append(list(d[greatest].keys())[0])
-        copy.remove(d[greatest])
+        #print(copy[greatest][list(copy[greatest].keys())[0]]["%"])
+        sortedd.append(list(copy[greatest].keys())[0])
+        copy.remove(copy[greatest])
     #step=switch(step)
+    if ascending:
+        return list(reversed(sortedd))
     return sortedd
+
+def display_progress(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
