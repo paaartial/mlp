@@ -5,9 +5,9 @@ import json
 import time
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from helper import *
-
 from layer import Layer
 
 random.seed(42)
@@ -96,6 +96,25 @@ class Network:
             delta_b = np.array(error_at_layer[len(self.layers)-l-1])
             self.layers[l].biases = np.subtract(self.layers[l].biases, self.learning_rate * delta_b)
         
+    def train_test_assess(self, train_pairs, test_pairs, intervals):
+        x = []
+        y = []
+        for train_index in range(len(train_pairs)):
+            if train_index in intervals or train_index==0 or train_index==len(train_pairs)-1:
+                test = self.test(test_pairs)
+                x.append(train_index)
+                y.append(test["%"])
+                print(str(train_index) + " : " + str(list(test.values())[0]))
+            iteration = self.feed_forward(train_pairs[train_index])
+            self.backpropogate(iteration["error_prime"])
+        test = self.test(test_pairs)
+        print(str(train_index) + " : " + str(list(test.values())[0]))
+        plt.plot(x, y)
+        plt.xlabel('train size')
+        plt.ylabel('%' + " guess rate")
+        plt.title('Performance by train size')
+        plt.show()
+
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
         for train_index in range(len(train_pairs)):
@@ -106,14 +125,7 @@ class Network:
         end_time = time.time()
         time_elapsed = end_time-start_time
         #print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
-    
-    def batch_gradient_descent(self, train_pairs):
-        progress=1
-        for pair in train_pairs:
-            print(str(progress) + "/" + str(len(train_pairs)))
-            total_error = self.total_avg_error(train_pairs)
-            self.backpropogate(total_error)
-            progress+=1
+
             
     def test(self, test_pairs, track_progress=False):
         average_error=0
@@ -156,3 +168,11 @@ class Network:
             to_save["layers"]=[l.length for l in self.layers]
             to_save["lr"] = self.learning_rate
             json.dump(to_save, outfile)
+    
+    def batch_gradient_descent(self, train_pairs):
+        progress=1
+        for pair in train_pairs:
+            print(str(progress) + "/" + str(len(train_pairs)))
+            total_error = self.total_avg_error(train_pairs)
+            self.backpropogate(total_error)
+            progress+=1
