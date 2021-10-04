@@ -55,7 +55,10 @@ class Network:
 
     def feed_forward(self, pair):
         self.input_layer.out_activations = pair[0].flatten()
-        target = pair[1]
+        try:
+            target = pair[1]
+        except:
+            pass
         for current_layer_index in range(1, len(self.layers)):
             cl = self.layers[current_layer_index]
             wm, a, b = cl.weight_matrix, self.layers[current_layer_index-1].out_activations, cl.biases
@@ -68,8 +71,15 @@ class Network:
         for a in range(len(output_activations)):
             if output_activations[a]> output_activations[greatest_activation]:
                 greatest_activation=a
-
-        return {"error_prime" : mse_prime(output_activations, target), "prediction" : greatest_activation, "error" : mean_squared_error(output_activations, target)}
+        try:
+            return {
+                "error_prime" : mse_prime(output_activations, target),
+                "prediction" : greatest_activation, 
+                "error" : mean_squared_error(output_activations, target)}
+        except:
+            return {
+                "prediction" : greatest_activation
+            }
 
     def backpropogate(self, cost):
         # dC/dout * dout/din
@@ -128,19 +138,25 @@ class Network:
 
             
     def test(self, test_pairs, track_progress=False):
-        average_error=0
         guess_percentage=0
         for test_index in range(len(test_pairs)):
             if track_progress:
                 print("why?")
             iteration = self.feed_forward(test_pairs[test_index])
-            average_error+=sum(iteration["error"])
+            try:
+                average_error=sum(iteration["error"])
+            except KeyError:
+                average_error = 0
             if iteration["prediction"] == test_pairs[test_index][1]:
                 guess_percentage +=1
         guess_percentage = guess_percentage / len(test_pairs)
         average_error = average_error / len(test_pairs)
-        print("\n" + "stats: " + str({"%" : 100 * guess_percentage, "average error": average_error}))
-        return {"%" : 100 * guess_percentage, "average error": average_error}
+        if average_error:
+            print("\n" + "stats: " + str({"%" : 100 * guess_percentage, "average error": average_error}))
+            return {"%" : 100 * guess_percentage, "average error": average_error}
+        else:
+            print("\n" + "stats: " + str({"%" : 100 * guess_percentage}))
+            return {"%" : 100 * guess_percentage}
 
     def find_optimal_learning_rate(self, start, delta, num_tests, train_pairs, test_pairs):
         performance_by_lr = {}
@@ -162,12 +178,17 @@ class Network:
         return performance_by_lr
         
     def save(self):
-        with open(self.name +".json", "w") as outfile:
+        import os
+        script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        rel_path = os.path.join("pretrained-networks", self.name +".json")
+        abs_file_path = os.path.join(script_dir, rel_path)
+        with open(abs_file_path, "w") as outfile:
             to_save={}
             to_save["weights"]=[[list(n) for n in l.weight_matrix] for l in self.layers]
             to_save["layers"]=[l.length for l in self.layers]
             to_save["lr"] = self.learning_rate
             json.dump(to_save, outfile)
+            outfile.close()
     
     def batch_gradient_descent(self, train_pairs):
         progress=1

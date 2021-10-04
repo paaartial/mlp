@@ -16,11 +16,12 @@ block_size=20
 grid_size=[10, 10]
 grid_start=[int(0.12*window_width), int(0.13*window_height)]
 grid = [[255 for x in range(28)] for y in range(28)]
-grid_transform = np.ndarray(shape = (28, 28, 1))
+from run import kernel_size
+grid_transform = np.zeros(shape = (1, 28, 28))
 
 mouse_down = False
 
-guesser = load_network("train_complete", new_name="guesser")
+guesser = load_network("2x2Conv10000", new_name="guesser")
 
 global SCREEN, CLOCK
 pygame.init()
@@ -39,7 +40,7 @@ def drawGrid(grid):
 
 def vector_to_coord(pos):
     out_of_range = False
-    x_coord = pos[0]-grid_start[0]
+    x_coord = pos[0]-grid_start[0]  
     y_coord = pos[1]-grid_start[1]
     if x_coord > block_size * len(grid)-1 or y_coord > block_size * len(grid[0])-1 or x_coord < 0 or y_coord < 0:
         out_of_range = True 
@@ -63,10 +64,11 @@ while running:
         if not mouse_coord[2]:
             try:
                 grid[mouse_coord[0]][mouse_coord[1]] = 0
-                grid_transform[mouse_coord[0]][mouse_coord[1]] = 255
+                grid_transform[0][mouse_coord[0]][mouse_coord[1]] = 255
 
-            except IndexError:
+            except:
                 print(mouse_coord)
+                
                 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
