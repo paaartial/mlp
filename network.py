@@ -105,25 +105,6 @@ class Network:
 
             delta_b = np.array(error_at_layer[len(self.layers)-l-1])
             self.layers[l].biases = np.subtract(self.layers[l].biases, self.learning_rate * delta_b)
-        
-    def train_test_assess(self, train_pairs, test_pairs, intervals):
-        x = []
-        y = []
-        for train_index in range(len(train_pairs)):
-            if train_index in intervals or train_index==0 or train_index==len(train_pairs)-1:
-                test = self.test(test_pairs)
-                x.append(train_index)
-                y.append(test["%"])
-                print(str(train_index) + " : " + str(list(test.values())[0]))
-            iteration = self.feed_forward(train_pairs[train_index])
-            self.backpropogate(iteration["error_prime"])
-        test = self.test(test_pairs)
-        print(str(train_index) + " : " + str(list(test.values())[0]))
-        plt.plot(x, y)
-        plt.xlabel('train size')
-        plt.ylabel('%' + " guess rate")
-        plt.title('Performance by train size')
-        plt.show()
 
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
@@ -135,7 +116,6 @@ class Network:
         end_time = time.time()
         time_elapsed = end_time-start_time
         #print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
-
             
     def test(self, test_pairs, track_progress=False):
         guess_percentage=0
@@ -158,6 +138,25 @@ class Network:
             print("\n" + "stats: " + str({"%" : 100 * guess_percentage}))
             return {"%" : 100 * guess_percentage}
 
+    def train_test_assess(self, train_pairs, test_pairs, intervals):
+        x = []
+        y = []
+        for train_index in range(len(train_pairs)):
+            if train_index in intervals or train_index==0 or train_index==len(train_pairs)-1:
+                test = self.test(test_pairs)
+                x.append(train_index)
+                y.append(test["%"])
+                print(str(train_index) + " : " + str(list(test.values())[0]))
+            iteration = self.feed_forward(train_pairs[train_index])
+            self.backpropogate(iteration["error_prime"])
+        test = self.test(test_pairs)
+        print(str(train_index) + " : " + str(list(test.values())[0]))
+        plt.plot(x, y)
+        plt.xlabel('train size')
+        plt.ylabel('%' + " guess rate")
+        plt.title('Performance by train size')
+        plt.show()
+
     def find_optimal_learning_rate(self, start, delta, num_tests, train_pairs, test_pairs):
         performance_by_lr = {}
         total_train_pairs = num_tests * len(train_pairs)
@@ -174,7 +173,6 @@ class Network:
             self.clear_weights()
         lr_best = performance_by_lr[sort_things(performance_by_lr)[0]]["%"]
         self.learning_rate = lr_best
-        self.train(train_pairs)
         return performance_by_lr
         
     def save(self):
