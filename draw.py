@@ -43,12 +43,12 @@ def drawGrid():
             pygame.draw.rect(SCREEN, (grid[x][y], grid[x][y], grid[x][y]), rect)
 
 def drawNum(num):
-    for x in range(len(num)):
-        for y in range(len(num[x])):
+    for y in range(len(num)):
+        for x in range(len(num[y])):
             y_coord=y*5 + num_start[1]
             x_coord=x*5 + num_start[0]
             rect = pygame.Rect(x_coord, y_coord, 5, 5)
-            pygame.draw.rect(SCREEN, ((1-num[x][y])*255, (1-num[x][y])*255, (1-num[x][y])*255), rect)
+            pygame.draw.rect(SCREEN, ((1-num[y][x])*255, (1-num[y][x])*255, (1-num[y][x])*255), rect)
 
 def vector_to_coord(pos):
     out_of_range = False
@@ -88,6 +88,6 @@ while running:
             pygame.quit()
             sys.exit()
 
-    pygame.display.update()
+    pygame.display.flip()
 
 
