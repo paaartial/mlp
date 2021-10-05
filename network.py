@@ -54,7 +54,7 @@ class Network:
         return [e/len(pairs) for e in err]
 
     def feed_forward(self, pair):
-        self.input_layer.out_activations = pair[0].flatten()
+        self.input_layer.out_activations = pair[0].flatten() / 255
         try:
             target = pair[1]
         except:

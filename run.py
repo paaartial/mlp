@@ -37,14 +37,15 @@ if __name__ == "__main__":
     mnist = load_data()
     mnist_train, mnist_test = (conv(mnist[0][0]), mnist[0][1]), (conv(mnist[1][0]), mnist[1][1])
 
-    train_size = 10000
+    train_size = 50000
     test_size = 10000
 
     to_train, to_test = split_train_test(mnist_train, mnist_test, train_size+1, test_size)
 
-    net = load_network("2x2Conv10000")
-    net.test(to_test)
-    #net = Network("train_complete", [mnist_train[0][0].size, 76, 10], 0.012)
+    #net = load_network("2x2Conv10000")
+    #net.test(to_test)
+
+    train_complete = Network("net", [mnist_train[0][0].size, 76, 10], 0.012)
 
     #first test:
     #start = 0.005, delta = 0.001, iterations = 50
@@ -67,7 +68,8 @@ if __name__ == "__main__":
 
     num_epochs=1
     for epoch in range(num_epochs):
-        net.train(to_train)
-    net.test(to_test)
-    net.save()
+        train_complete.train(to_train)
+    train_complete.test(to_test)
+    train_complete.save()
+    train_complete.save()
 

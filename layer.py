@@ -1,7 +1,7 @@
 from helper import sigmoid, ReLu, tanh
 
 class Layer:
-    def __init__(self, l, af=sigmoid):
+    def __init__(self, l, af=ReLu):
         self.length=l
         self.activation_function=af
         self.in_activations=[0 for n in range(l)]

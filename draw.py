@@ -21,7 +21,7 @@ grid_transform = np.zeros(shape = (1, 28, 28))
 
 mouse_down = False
 
-guesser = load_network("2x2Conv10000", new_name="guesser")
+guesser = load_network("train_complete", new_name="guesser")
 
 global SCREEN, CLOCK
 pygame.init()
@@ -55,12 +55,12 @@ while running:
     SCREEN.fill(BLACK)
     i+=1
     mouse_pos = pygame.mouse.get_pos()
+    mouse_coord = vector_to_coord(mouse_pos)
     drawGrid(grid)
     if i % if_print == 0:
-        print(grid_transform)
+        #print(grid_transform)
         print(guesser.feed_forward(conv(grid_transform))["prediction"])
     if mouse_down:
-        mouse_coord = vector_to_coord(mouse_pos)
         if not mouse_coord[2]:
             try:
                 grid[mouse_coord[0]][mouse_coord[1]] = 0
@@ -68,6 +68,10 @@ while running:
 
             except:
                 print(mouse_coord)
+    if pygame.mouse.get_pressed()[2]:
+        if not mouse_coord[2]:
+            grid[mouse_coord[0]][mouse_coord[1]] = 255
+            grid_transform[0][mouse_coord[0]][mouse_coord[1]] = 0
                 
                 
     for event in pygame.event.get():
