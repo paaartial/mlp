@@ -40,34 +40,34 @@ if __name__ == "__main__":
     train_size = 10000
     test_size = 10000
 
+    epochs = 1
+
     to_train, to_test = split_train_test(mnist_train, mnist_test, train_size+1, test_size)
 
     #net = load_network("2x2Conv10000")
     #net = load_network("net")
     #net.test(to_test)
 
-    test_net = Network("test_net", [mnist_train[0][0].size, 76, 10], 0.012)
+    # 0.053
+    test_net = Network("test_net", [mnist_train[0][0].size, 76, 10], 0.053)
     #first test:
     #start = 0.005, delta = 0.001, iterations = 50
     #train, test size = 10000
 
     #net.train_test_assess(to_train, to_test, intervals=[1000, 10000, 30000, 40000])
-
+    print(to_train[0][0])
     """net.train(to_train)
     net.test(to_test)
     """
 
-    
+    """
     lrs = test_net.find_optimal_learning_rate(0.005, 0.001, 50, to_train, to_test)
     lrs_sorted = sort_things(lrs)
     print(lrs)
     print("learning rate " + str(lrs_sorted[0]) + " achieves an accuracy of " + str((lrs[lrs_sorted[0]]["%"] * 100) //100) + "%")
-    
-
-
     """
-    num_epochs=1
-    for epoch in range(num_epochs):
+
+"""    for epoch in range(epochs):
         test_net.train(to_train)
-    test_net.test(to_test)
-    """
+    test_net.test(to_test)"""
+    
