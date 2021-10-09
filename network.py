@@ -10,16 +10,19 @@ import matplotlib.pyplot as plt
 from helper import *
 from layer import Layer
 
+from gd_optimizer import *
+
 random.seed(42)
 
 class Network:
-    def __init__(self, n, l, r):
+    def __init__(self, n, l, r, gdo=gradient_descent_optimizer()):
         self.layers=[Layer(li) for li in l]
         self.input_layer = self.layers[0]
         self.learning_rate=r
         self.output_layer=self.layers[len(l)-1]
         self.output_layer.activation_function=sigmoid
         self.name=n
+        self.optimizer = gdo
         for lay in range(1, len(self.layers)):
             self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for n in range(self.layers[lay-1].length)] for n2 in range(self.layers[lay].length)]
             self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
@@ -104,7 +107,7 @@ class Network:
             self.layers[l].weight_matrix = np.subtract(self.layers[l].weight_matrix, self.learning_rate*delta_w)
 
             delta_b = np.array(error_at_layer[len(self.layers)-l-1])
-            self.layers[l].biases = np.subtract(self.layers[l].biases, self.learning_rate * delta_b)
+            self.layers[l].biases = np.subtract(self.layers[l].biases, self.optimizer.adapt_lr(self.learning_rate) * self.optimizer.adapt_gc(delta_b))
 
     def train(self, train_pairs, track_progress=True):
         start_time = time.time()
@@ -115,7 +118,7 @@ class Network:
             self.backpropogate(iteration["error_prime"])
         end_time = time.time()
         time_elapsed = end_time-start_time
-        #print("Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
+        print("/n" + "Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
             
     def test(self, test_pairs, track_progress=False):
         guess_percentage=0
@@ -187,11 +190,3 @@ class Network:
             to_save["lr"] = self.learning_rate
             json.dump(to_save, outfile)
             outfile.close()
-    
-    def batch_gradient_descent(self, train_pairs):
-        progress=1
-        for pair in train_pairs:
-            print(str(progress) + "/" + str(len(train_pairs)))
-            total_error = self.total_avg_error(train_pairs)
-            self.backpropogate(total_error)
-            progress+=1
