@@ -61,7 +61,10 @@ def vector_to_coord(pos):
 
 running=True
 
+prnt = 100
+i=0
 while running:
+    i+=1
     SCREEN.fill(BLACK)
     mouse_pos = pygame.mouse.get_pos()
     mouse_coord = vector_to_coord(mouse_pos)
@@ -69,15 +72,19 @@ while running:
     guess = guesser.feed_forward(conv(grid_transform))["prediction"]
 
     drawNum(numbers[guess])
+
+    # mouse.get_pressed --> {left_click : bool, right_click : bool, middle : bool}
+    # grid transform : 255 = black
+    # grid : 255 = white
     if pygame.mouse.get_pressed()[0]:
         if not mouse_coord[2]:
             grid[mouse_coord[0]][mouse_coord[1]] = 0
-            grid_transform[0][mouse_coord[0]][mouse_coord[1]] = 255
+            grid_transform[0][mouse_coord[1]][mouse_coord[0]] = 255
 
     if pygame.mouse.get_pressed()[2]:
         if not mouse_coord[2]:
             grid[mouse_coord[0]][mouse_coord[1]] = 255
-            grid_transform[0][mouse_coord[0]][mouse_coord[1]] = 0
+            grid_transform[0][mouse_coord[1]][mouse_coord[0]] = 0
             
     if pygame.mouse.get_pressed()[1]:
         grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
