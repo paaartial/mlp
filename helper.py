@@ -47,7 +47,7 @@ def split_train_test(train, test, train_size, test_size):
 
 #RANDOM SHIT
 def draw_image(img_to_draw):
-    some_digit_image = img_to_draw.reshape(28, 28)
+    some_digit_image = img_to_draw.reshape(img_to_draw.shape)
     plt.imshow(some_digit_image, cmap = mpl.cm.binary, interpolation="nearest")
     plt.axis("off")
     plt.show()
