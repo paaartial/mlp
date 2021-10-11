@@ -89,11 +89,16 @@ while running:
     if pygame.mouse.get_pressed()[1]:
         grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
         grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
-                
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+        # make reseting shit laptop friendly
+        if event.type == pygame.KEYDOWN:
+            grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
+            grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
 
     pygame.display.flip()
 
