@@ -7,8 +7,8 @@ from run import load_network, conv
 
 from digits import numbers
 
-# from network import Network
-# from training import load_network
+from network import Network
+from run import load_network
 
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
@@ -90,16 +90,16 @@ while running:
         grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
         grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
 
+        # make reseting shit laptop friendly
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
-        # make reseting shit laptop friendly
-        if event.type == pygame.KEYDOWN:
-            grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
-            grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
-
+        if event.type == pygame.KEYDOWN: 
+            if event.key == pygame.K_SPACE:
+                grid = [[255 for x in range(len(grid))] for y in range(len(grid[0]))]
+                grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
+                
     pygame.display.flip()
 
 
