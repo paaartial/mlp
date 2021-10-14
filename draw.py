@@ -13,11 +13,11 @@ from run import load_network
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 window_height = 800
-window_width = 1000
+window_width = 1440
 block_size=20
 grid_size=[28, 28]
 
-grid_start=[int(0.12*window_width), int(0.13*window_height)]
+grid_start=[int(0.04*window_width), int(0.13*window_height)]
 num_start = [775, 350]
 
 grid = [[255 for x in range(grid_size[0])] for y in range(grid_size[1])]
