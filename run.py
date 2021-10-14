@@ -9,7 +9,6 @@ from helper import *
 import skimage.measure
 
 import numpy as np
-import pandas as pd
 
 np.random.seed(69)
 
@@ -53,12 +52,11 @@ if __name__ == "__main__":
     #first test:
     #start = 0.005, delta = 0.001, iterations = 50
     #train, test size = 10000
-
+    
     #net.train_test_assess(to_train, to_test, intervals=[1000, 10000, 30000, 40000])
-    print(to_train[0][0])
-    """net.train(to_train)
-    net.test(to_test)
-    """
+    #net.train(to_train)
+    #net.test(to_test)
+    
 
     """
     lrs = test_net.find_optimal_learning_rate(0.005, 0.001, 50, to_train, to_test)
