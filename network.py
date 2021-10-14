@@ -24,17 +24,17 @@ class Network:
         self.name=n
         self.optimizer = gdo
         for lay in range(1, len(self.layers)):
-            self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for n in range(self.layers[lay-1].length)] for n2 in range(self.layers[lay].length)]
-            self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
+            #self.layers[lay].weight_matrix = [[random.randint(-30, 30)/100 for n in range(self.layers[lay-1].length)] for n2 in range(self.layers[lay].length)]
+            #self.layers[lay].biases = [random.randint(-50, 50)/100 for n in range(self.layers[lay].length)]
 
             #self.layers[lay].weight_matrix = np.random.rand(self.layers[lay].length, self.layers[lay-1].length)
             #self.layers[lay].biases = np.random.rand(self.layers[lay].length) 
 
             #limit = np.sqrt(6 / float(self.layers[lay-1].length + self.layers[lay].length))
-            # scale = 1/max(1., (self.layers[lay].length+self.layers[lay].length)/2.)
-            # limit = math.sqrt(3.0 * scale)
-            # self.layers[lay].weight_matrix = np.random.uniform(low=-limit, high=limit, size=(self.layers[lay].length, self.layers[lay-1].length))
-            # self.layers[lay].biases = np.zeros(self.layers[lay].length)
+            scale = 1/max(1., (self.layers[lay].length+self.layers[lay].length)/2.)
+            limit = math.sqrt(3.0 * scale)
+            self.layers[lay].weight_matrix = np.random.uniform(low=-limit, high=limit, size=(self.layers[lay].length, self.layers[lay-1].length))
+            self.layers[lay].biases = np.zeros(self.layers[lay].length)
     
     def __repr__(self):
         return self.name
@@ -118,7 +118,7 @@ class Network:
             self.backpropogate(iteration["error_prime"])
         end_time = time.time()
         time_elapsed = end_time-start_time
-        print("/n" + "Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
+        print("\n" + "Time taken: " + str(time_elapsed//60) + " minutes, " + str(time_elapsed%60) + " seconds")
             
     def test(self, test_pairs, track_progress=False):
         guess_percentage=0
@@ -135,10 +135,10 @@ class Network:
         guess_percentage = guess_percentage / len(test_pairs)
         average_error = average_error / len(test_pairs)
         if average_error:
-            print("\n" + "stats: " + str({"%" : 100 * guess_percentage, "average error": average_error}))
+            print("stats: " + str({"%" : 100 * guess_percentage, "average error": average_error}))
             return {"%" : 100 * guess_percentage, "average error": average_error}
         else:
-            print("\n" + "stats: " + str({"%" : 100 * guess_percentage}))
+            print("stats: " + str({"%" : 100 * guess_percentage}))
             return {"%" : 100 * guess_percentage}
 
     def train_test_assess(self, train_pairs, test_pairs, intervals):
