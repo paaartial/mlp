@@ -3,17 +3,17 @@ import pygame, sys, time
 import numpy as np
 
 from network import Network
-from run import load_network, conv
+from training import load_network, conv
 
 from digits import numbers
 
 from network import Network
-from run import load_network
+from training import load_network
 
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 window_height = 800
-window_width = 1440
+window_width = 1000
 block_size=20
 grid_size=[28, 28]
 
@@ -22,7 +22,7 @@ num_start = [775, 350]
 
 grid = [[255 for x in range(grid_size[0])] for y in range(grid_size[1])]
 
-from run import kernel_size
+from training import kernel_size
 grid_transform = np.zeros(shape = (1, grid_size[0], grid_size[1]))
 
 guesser = load_network("net", new_name="guesser")
